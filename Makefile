@@ -10,5 +10,8 @@ ps:
 commande:
 	gcc src/commande/commande.c src/commande/error.c -o bin/commande
 
+myls:
+	gcc -lm src/myls/myls.c -o bin/myls
+
 file:
 	mkdir bin
