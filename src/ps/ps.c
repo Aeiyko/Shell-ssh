@@ -10,7 +10,7 @@
 #include <pwd.h>
 #include <alloca.h>
 #include <time.h>
-#include "../error.h"   
+#include "./error.h"   
 
 #define PATH "/proc/"
 #define STAT "/stat"

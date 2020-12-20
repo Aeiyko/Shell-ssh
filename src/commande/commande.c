@@ -5,7 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include "error.h"
+#include "./error.h"
 
 #define CYAND "\033[01;36m"
 #define CYANF "\033[0m"
