@@ -42,3 +42,6 @@ struct parser{
     enum redtype redtype;
     char command[CH_LENGTH];
 };
+
+void print_test(char *cmd);
+int parser(char *cmd,struct parser parser[CH_LENGTH]);

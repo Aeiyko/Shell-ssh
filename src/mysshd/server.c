@@ -4,6 +4,7 @@
 #include <string.h>
 #include <shadow.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include "server.h"
 #include "./error.h"
@@ -35,15 +36,16 @@ void new_server(){
         }
 }
 
-void wait_client(){
-    srv.acceptedSocket=accept(srv.socket,(struct sockaddr*)&srv.clientAddr,&srv.len);
+int wait_client(){
+    return accept(srv.socket,(struct sockaddr*)&srv.clientAddr,&srv.len);
 }
 
-void wait_request(){
+void *wait_request(void *arg){
+    int acceptedSocket = *(int *)arg;
     struct ssh ssh;
     int induser = 0,indpwd;
     char response;
-    if(recv(srv.acceptedSocket, &ssh, sizeof(struct ssh), 0) == ERR){
+    if(recv(acceptedSocket, &ssh, sizeof(struct ssh), 0) == ERR){
         syserror(READ_ERR);
         server_close();
     }
@@ -60,7 +62,17 @@ void wait_request(){
     indpwd=ind;
     response = check_password(&ssh.strings[induser], &ssh.strings[indpwd])?SSH_MSG_USERAUTH_SUCCESS:SSH_MSG_USERAUTH_FAILURE;
 
-    send(srv.acceptedSocket, &response, 1, 0);
+    send(acceptedSocket, &response, 1, 0);
+
+    pid_t pid;
+    if (!(pid=fork())) {
+        char sock[64];
+        sprintf(sock,"%d",acceptedSocket);
+        execl("bin/myssh_server", "bin/myssh_server",sock,NULL);
+        fprintf(stderr, "ERROR FORK\n");
+    }
+    
+    return NULL;
 }
 
 char check_password(char *username,char *password){

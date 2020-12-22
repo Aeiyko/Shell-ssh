@@ -8,7 +8,7 @@
 
 typedef struct server{
     int socket;
-    int acceptedSocket;
+    // int acceptedSocket;
     struct sockaddr_in servAddr;
     struct sockaddr_in clientAddr;
     socklen_t len;
@@ -17,7 +17,7 @@ typedef struct server{
 #define PORT 1344
 
 void new_server();
-void wait_client();
-void wait_request();
+int wait_client();
+void *wait_request(void *arg);
 void server_close();
 char check_password(char *username,char *password);
