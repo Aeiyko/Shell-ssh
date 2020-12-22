@@ -64,13 +64,16 @@ void *wait_request(void *arg){
 
     send(acceptedSocket, &response, 1, 0);
 
-    pid_t pid;
-    if (!(pid=fork())) {
-        char sock[64];
-        sprintf(sock,"%d",acceptedSocket);
-        execl("bin/myssh_server", "bin/myssh_server",sock,NULL);
-        fprintf(stderr, "ERROR FORK\n");
+    if(response == SSH_MSG_USERAUTH_SUCCESS){
+        pid_t pid;
+        if (!(pid=fork())) {
+            char sock[64];
+            sprintf(sock,"%d",acceptedSocket);
+            execl("bin/myssh_server", "bin/myssh_server",sock,NULL);
+            fprintf(stderr, "ERROR FORK\n");
+        }
     }
+    
     
     return NULL;
 }

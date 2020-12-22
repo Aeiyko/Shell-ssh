@@ -3,9 +3,11 @@
 #include <memory.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <unistd.h>
 #include "client.h"
 #include "./error.h"
 #include "../mysshd/sshstruct.h"
+#include "../myssh-server/myssh_server.h"
 
 #define neterr_client(clt, n) client_destroy(clt),syserror(n);
 
@@ -56,6 +58,7 @@ void wait_server_response(){
     recv(clt.socket, &ssh, sizeof(struct ssh), 0);
     if(ssh.user_request == SSH_MSG_USERAUTH_SUCCESS){
         printf("Connection success\n");
+        send_command_to_server("ls -lra");
     }
     else if (ssh.user_request == SSH_MSG_USERAUTH_FAILURE) {
         printf("Connection failed\n");
@@ -64,12 +67,29 @@ void wait_server_response(){
         printf("Error unknown response : %d\n",ssh.user_request);
     }
 
-    char pouet[4];
-    if(recv(clt.socket, pouet, 4, 0) == -1)perror("OSCOUR DU CLIENT");
-    printf("%s\n",pouet);
 }
 
 void stop_client(){
     close(clt.socket);
 
+}
+
+void send_command_to_server(char *cmd){
+    struct serverssh serverssh;
+    struct serversshresponse serversshresponse;
+    char response[1024];
+    serverssh.type = SSH_MSG_CHANNEL_REQUEST;
+    strcpy(serverssh.strings, "exec");
+    strcpy(&serverssh.strings[5], cmd);
+    send(clt.socket, &serverssh, sizeof(struct serverssh), 0);
+
+    ssize_t readed;
+
+    do {
+        readed = recv(clt.socket,response,1024,0);
+        printf("%s",response);
+    }while (readed == 1024);
+
+    recv(clt.socket, &serversshresponse, sizeof(struct serversshresponse ), 0);
+    printf("\nProcessus distant terminé avec le code [%d]\n",serversshresponse.retour);
 }

@@ -9,13 +9,6 @@
 #include <glob.h>
 #include "commands.h"
 
-char *msg[] = {
-  "read error :",
-  "write error :",
-  "cmd error"
-};
-
-
 int shell(){
   int end=0, i, status, size_read, positions[BLOCK];
   char*path, c='>';

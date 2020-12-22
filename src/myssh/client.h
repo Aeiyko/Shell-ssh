@@ -16,6 +16,7 @@ void newClient(char* addr,int port);
 void send_to_server(char *username,char *password);
 void stop_client();
 void wait_server_response();
+void send_command_to_server(char *cmd);
 
 
 

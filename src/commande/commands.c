@@ -10,6 +10,12 @@
 #include "commands.h"
 
 
+static char *msg[] = {
+  "read error :",
+  "write error :",
+  "cmd error"
+};
+
 int toArgs(char *command, char *args[BLOCK]){
   char *tmp, **current=args;
   for(tmp=strtok(command, SPACE);tmp;*current=tmp,current++,tmp=strtok(NULL, SPACE));
