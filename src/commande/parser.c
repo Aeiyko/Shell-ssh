@@ -42,7 +42,7 @@ int parser(char *cmd,struct parser parser[CH_LENGTH]){
                 parser[++ind].type = SEP;
                 parser[ind].sep = BACK;
                 if(i+1 < len && cmd[i+1] == '&'){
-                    parser[ind].sep = ET; 
+                    parser[ind].sep = ET;
                     i++;
                 }
                 break;
