@@ -63,6 +63,10 @@ void wait_server_response(){
     else {
         printf("Error unknown response : %d\n",ssh.user_request);
     }
+
+    char pouet[4];
+    if(recv(clt.socket, pouet, 4, 0) == -1)perror("OSCOUR DU CLIENT");
+    printf("%s\n",pouet);
 }
 
 void stop_client(){

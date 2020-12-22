@@ -91,16 +91,26 @@ int parser(char *cmd,struct parser parser[CH_LENGTH]){
 
 
     }
-    return ind;
+    return ind+1;
 }
 
-// int main(void){
-//     char command_test[] = "ls&&cat||pouet 2>>fichier&&cat";
-//     struct parser retour[CH_LENGTH];
-//     int taille_parse = parser(command_test, retour);
-//     printf("%d\n",taille_parse);
-//     for (int i=0; i<=taille_parse; i++) {
-//         printf("%s %s %s %s '%s'\n",typestring[retour[i].type], sepstring[retour[i].sep], redstring[retour[i].red], redtypestring[retour[i].redtype], retour[i].command);
-//     }
-//     return 0;
-// }
+void print_test(char *cmd){
+    struct parser retour[CH_LENGTH];
+    int taille_parse = parser(cmd, retour);
+    printf("%d\n",taille_parse);
+    for (int i=0; i<taille_parse; i++) {
+        printf("%s ",typestring[retour[i].type]);
+        if (retour[i].type == SEP) {
+            printf("%s ", sepstring[retour[i].sep]);
+        }
+        if (retour[i].type == RED) {
+            printf("%s %s ", redstring[retour[i].red], redtypestring[retour[i].redtype]);
+        }
+
+        if (retour[i].type == RED || retour[i].type == CMD || retour[i].type == VAR) {
+            printf("'%s'",retour[i].command);
+
+        }
+        printf("\n");
+    }
+}
