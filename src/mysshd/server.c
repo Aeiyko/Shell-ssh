@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <pwd.h>
 #include "server.h"
 #include "./error.h"
 #include "./sshstruct.h"
@@ -41,6 +42,7 @@ int wait_client(){
 }
 
 void *wait_request(void *arg){
+    struct passwd *password;
     int acceptedSocket = *(int *)arg;
     struct ssh ssh;
     int induser = 0,indpwd;
@@ -49,15 +51,17 @@ void *wait_request(void *arg){
         syserror(READ_ERR);
         server_close();
     }
-    printf("%d\n",ssh.user_request);
+    printf("----------\n");
+    printf("type de requete : %d\n",ssh.user_request);
     int ind=0;
-    printf("%s\n",ssh.strings+ind);
+    printf("Utilisateur : %s\n",ssh.strings+ind);
     ind += strlen(ssh.strings)+1;
-    printf("%s\n",ssh.strings+ind);
+    printf("mode : %s\n",ssh.strings+ind);
     ind += strlen(ssh.strings+ind)+1;
-    printf("%s\n",ssh.strings+ind);
+    printf("securité utilisé : %s\n",ssh.strings+ind);
     ind += strlen(ssh.strings+ind)+1;
-    printf("%s\n",ssh.strings+ind);
+    printf("Mot de passe : %s\n",ssh.strings+ind);
+    printf("----------\n");
 
     indpwd=ind;
     response = check_password(&ssh.strings[induser], &ssh.strings[indpwd])?SSH_MSG_USERAUTH_SUCCESS:SSH_MSG_USERAUTH_FAILURE;
@@ -66,7 +70,9 @@ void *wait_request(void *arg){
 
     if(response == SSH_MSG_USERAUTH_SUCCESS){
         pid_t pid;
+        password = getpwnam(&ssh.strings[induser]);
         if (!(pid=fork())) {
+            setuid(password->pw_uid);
             char sock[64];
             sprintf(sock,"%d",acceptedSocket);
             execl("bin/myssh_server", "bin/myssh_server",sock,NULL);

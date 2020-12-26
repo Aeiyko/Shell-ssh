@@ -1,4 +1,5 @@
 #pragma once
+#include <sys/types.h>
 #define EXEC 1
 #define STOP 2
 
@@ -7,7 +8,7 @@ typedef struct _job{
   int etat;
   pid_t pid;
   int number;
-  job *next;
+  struct _job *next;
 }job;
 
 typedef struct _list_jobs{

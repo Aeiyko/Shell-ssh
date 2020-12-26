@@ -14,7 +14,7 @@
 #define WRITE_ERR 2
 #define CMD_ERR 3
 
-// extern char* msg[];
+extern char* msg[];
 int toArgs(char *command, char *args[BLOCK]);
 int makeCd(char *cmd_tab[BLOCK], int nb_items);
 int wildcard(char *cmd_tab[BLOCK], int *nb_items, int tab[BLOCK]);

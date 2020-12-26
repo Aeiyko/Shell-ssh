@@ -10,7 +10,7 @@
 #include "commands.h"
 
 
-static char *msg[] = {
+char *msg[] = {
   "read error :",
   "write error :",
   "cmd error"
@@ -104,5 +104,5 @@ int exec_cmd(char cmd[BLOCK]){
   for (i=0; i<nb_items; i++) {
     if (positions[i]) free(cmd_tab[i]);
   }
-  return status;
+  return WEXITSTATUS(status);
 }
