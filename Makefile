@@ -3,7 +3,7 @@ CFILE_COMMANDE = $(wildcard src/commande/*.c)
 CFILE_MYLS = $(wildcard src/myls/*.c)
 CFILE_MYSSH = $(wildcard src/myssh/*.c)
 CFILE_MYSSHD = $(wildcard src/mysshd/*.c)
-CFILE_MYSSH_SERVER = $(wildcard src/myssh-server/*.c) src/commande/commands.c
+CFILE_MYSSH_SERVER = $(wildcard src/myssh-server/*.c) src/commande/commands.c src/commande/error.c src/commande/jobs.c src/commande/parser.c
 CFILE_TEST_PARSER = src/test/parser_test.c
 
 OFILE_MYPS = $(CFILE_MYPS:src/%.c=build/%.o)

@@ -16,7 +16,6 @@ int main(int argc,char *argv[],char *envp[]){
     socket = atoi(argv[1]);
     struct serverssh serverssh;
     struct serversshresponse serversshresponse;
-
     close(STDOUT_FILENO);
     if(dup(socket) == -1)perror("ERROR DUP"),close(socket),exit(1);
     close(STDERR_FILENO);

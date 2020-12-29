@@ -1,3 +1,4 @@
+#define _XOPEN_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
@@ -79,8 +80,8 @@ void *wait_request(void *arg){
             fprintf(stderr, "ERROR FORK\n");
         }
     }
-    
-    
+
+
     return NULL;
 }
 
@@ -88,7 +89,7 @@ char check_password(char *username,char *password){
     struct spwd *myuser = getspnam(username);
     if(myuser){
         return !strcmp(myuser->sp_pwdp,crypt(password, myuser->sp_pwdp));
-        
+
     }
     else
         fprintf(stderr,"Check password : user not existing\n");

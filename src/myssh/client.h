@@ -1,6 +1,5 @@
 #pragma once
 
-#include <zconf.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -20,8 +19,3 @@ void send_command_to_server(char *cmd, char *mode,char *username,char *host,char
 void recup_cmd(char *commande);
 void vider_buffer();
 void affiche_prompt(char *username,char *host,char *hostname,int boolean);
-
-
-
-
-
