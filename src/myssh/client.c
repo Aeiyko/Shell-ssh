@@ -28,7 +28,6 @@ void newClient(char* addr,int port){
     clt.len = sizeof(struct sockaddr_in);
     if(!inet_aton(addr,&clt.clientAddr.sin_addr)){
         stop_client(clt.socket);
-        fprintf(stderr, "NAN C EST MOI BILLY TU MENS %d %s\n",__LINE__,addr);
         syserror(SOCKET_ERR);
     }
 
