@@ -37,8 +37,8 @@ int shell(){
 }
 
 int main(int argc, char* argv[], char* envp[]){
-  //exit(shell());
-  exec_cmd("ls");
+  exit(shell());
+  //exec_cmd("ls");
   //init_jobs();
 
   /*last_status stat;

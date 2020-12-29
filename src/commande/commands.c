@@ -101,8 +101,6 @@ int wildcard(char *cmd_tab[BLOCK], int *nb_items, int tab[BLOCK]){
         }
       }else i++;
     }
-    //for (int a=0; a<*nb_items; a++) printf("(%s)\n", cmd_tab[a]);
-    //printf("\n");
     return EXIT_NORMALLY;
 }
 

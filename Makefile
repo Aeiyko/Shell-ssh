@@ -18,7 +18,7 @@ OFILE_TEST_PARSER = $(CFILE_TEST_PARSER:src/%.c=build/%.o)
 FOLDERS = $(wildcard src/*)
 BUILD_FOLDERS = $(FOLDERS:src/%=build/%)
 
-all: myps commande myssh mysshd myls myssh_server
+all: myps mysh myssh mysshd myls myssh_server
 ssh: myssh mysshd myssh_server
 
 clean:
@@ -30,8 +30,8 @@ myps: bin/myps
 bin/myps: $(OFILE_MYPS)|bin
 	gcc $^ -o $@
 
-commande: bin/commande
-bin/commande: $(OFILE_COMMANDE)|bin
+mysh: bin/mysh
+bin/mysh: $(OFILE_COMMANDE)|bin
 	gcc $^ -o $@
 
 myls: bin/myls
