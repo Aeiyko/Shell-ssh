@@ -1,4 +1,5 @@
 #pragma once
+#include <sys/types.h>
 #define EXEC 1
 #define STOP 2
 #define BLOCK 1024

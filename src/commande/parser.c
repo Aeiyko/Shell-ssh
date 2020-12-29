@@ -4,6 +4,33 @@
 
 #define passe_espace if(i+1 < len && cmd[i+1] == ' '){i++;for (; i < len && cmd[i] == ' '; i++);i--;}
 
+static char *typestring[] = {
+    "CMD",
+    "SEP",
+    "RED",
+    "VAR"
+};
+
+static char *sepstring[] = {
+    "ET",
+    "OU",
+    "PTV",
+    "PIPE",
+    "BACK"
+};
+
+static char *redstring[] = {
+    "STD",
+    "STDERR",
+    "BOTH",
+    "INJ"
+};
+
+static char *redtypestring[] = {
+    "SIMPLE",
+    "ADD"
+};
+
 int parser(char *cmd,struct parser parser[CH_LENGTH]){
     int ind=0;
     int len=strlen(cmd);

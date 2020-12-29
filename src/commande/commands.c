@@ -7,6 +7,7 @@
 #include <glob.h>
 #include <assert.h>
 #include <sys/wait.h>
+#include "error.h"
 #include "parser.h"
 #include "jobs.h"
 #include "commands.h"
@@ -95,7 +96,6 @@ int wildcard(char *cmd_tab[BLOCK], int *nb_items, int tab[BLOCK]){
           a=0;
         }
         else if (r==GLOB_NOMATCH){
-          for (int a=0; a<*nb_items; a++) printf("(%s)\n", cmd_tab[a]);
           fprintf(stderr, "sh: no matches found or bad pattern for: %s\n", cmd_tab[i++]);
           return ERR;
         }
@@ -212,7 +212,12 @@ int exec_pipes(struct parser p[BLOCK],int start, int end, last_status *last){
   return parsed;
 }
 
-int exec_cmd_2(char cmd[BLOCK], last_status *last, int* end){
+int exec_cmd(char cmd[BLOCK]){
+  last_status last; int end;
+  return exec_cmd_shell(cmd, &last, &end);
+}
+
+int exec_cmd_shell(char cmd[BLOCK], last_status *last, int* end){
   int i, piped, status=0, size_parse, fg=1; enum mode mod=NORMAL, nb_pipes; pid_t pid;
   int nb;
   cmd_infos infos;
@@ -290,6 +295,5 @@ int exec_cmd_2(char cmd[BLOCK], last_status *last, int* end){
           break;
     }
   }
-
-  return status;
+  return WEXITSTATUS(status);
 }

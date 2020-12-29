@@ -3,7 +3,7 @@ CFILE_COMMANDE = $(wildcard src/commande/*.c)
 CFILE_MYLS = $(wildcard src/myls/*.c)
 CFILE_MYSSH = $(wildcard src/myssh/*.c)
 CFILE_MYSSHD = $(wildcard src/mysshd/*.c)
-CFILE_MYSSH_SERVER = $(wildcard src/myssh-server/*.c)
+CFILE_MYSSH_SERVER = $(wildcard src/myssh-server/*.c) src/commande/commands.c src/commande/error.c src/commande/jobs.c src/commande/parser.c
 CFILE_TEST_PARSER = src/test/parser_test.c
 
 OFILE_MYPS = $(CFILE_MYPS:src/%.c=build/%.o)
@@ -19,6 +19,7 @@ FOLDERS = $(wildcard src/*)
 BUILD_FOLDERS = $(FOLDERS:src/%=build/%)
 
 all: myps commande myssh mysshd myls myssh_server
+ssh: myssh mysshd myssh_server
 
 clean:
 	rm -fr bin
@@ -59,6 +60,7 @@ build/%.o: src/%.c |build
 build: $(BUILD_FOLDERS)
 
 build/%:
+	@echo "Construction des build $@"
 	mkdir -p $@
 
 bin:

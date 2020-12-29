@@ -11,16 +11,7 @@
 #include "commands.h"
 #include "jobs.h"
 
-char *msg[] = {
-  "read error ",
-  "write error ",
-  "cmd error ",
-  "fork error ",
-  "pipe error ",
-  "exec error ",
-  "parse error near '%s'\n",
-  "dup error "
-};
+
 
 int shell(){
   int end=0, i, status, size_read, positions[BLOCK];
@@ -39,14 +30,15 @@ int shell(){
     if ((size_read = read(STDIN_FILENO,&cmd_read,BLOCK*sizeof(char))) == ERR) fatalerror(READ_ERR);
     free(path);
     cmd_read[size_read-1] = '\0';
-    status = exec_cmd_2(cmd_read, &last, &end);
+    status = exec_cmd_shell(cmd_read, &last, &end);
     if (status == QUIT) break;
   }
   return EXIT_NORMALLY;
 }
 
 int main(int argc, char* argv[], char* envp[]){
-  exit(shell());
+  //exit(shell());
+  exec_cmd("ls");
   //init_jobs();
 
   /*last_status stat;
