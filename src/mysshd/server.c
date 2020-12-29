@@ -1,4 +1,4 @@
-#define _XOPEN_SOURCE
+// #define _XOPEN_SOURCE //DEFINE SI UBUNTU
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
