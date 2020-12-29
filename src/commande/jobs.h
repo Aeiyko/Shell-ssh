@@ -1,13 +1,18 @@
 #pragma once
 #define EXEC 1
 #define STOP 2
+#define BLOCK 1024
+
+#define STOPPED "stoppé"
+#define EXECUTION "en cours d'exécution"
+#define ABNORMAL 127
 
 typedef struct _job{
-  char* cmd;
+  char cmd[BLOCK];
   int etat;
   pid_t pid;
   int number;
-  job *next;
+  struct _job *next;
 }job;
 
 typedef struct _list_jobs{
@@ -15,8 +20,11 @@ typedef struct _list_jobs{
   job *first;
 }list_jobs;
 
+void init_jobs();
+job init_job(pid_t pid, int etat, char cmd[BLOCK]);
 void print_job_ended(job j, int status);
 void print_job(job j);
-void print_all_jobs(list_jobs* list);
-void add_job(list_jobs* list, job j);
-void del_job(list_jobs* list, pid_t pid);
+void print_all_jobs();
+int update_job(pid_t pid, int etat);
+void add_job(job j);
+int del_job(pid_t pid);

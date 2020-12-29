@@ -7,7 +7,7 @@
 int parser(char *cmd,struct parser parser[CH_LENGTH]){
     int ind=0;
     int len=strlen(cmd);
-    int chaine;
+    int chaine=0;
 
     for (int i=0; i<len; i++) {
         switch(cmd[i]){
@@ -58,6 +58,8 @@ int parser(char *cmd,struct parser parser[CH_LENGTH]){
                         i++;
                     }
                     passe_espace;
+                }else{
+                  parser[ind].command[chaine++] = cmd[i];
                 }
                 break;
             case '<':
