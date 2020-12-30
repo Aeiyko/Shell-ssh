@@ -125,7 +125,7 @@ void boucleRead(){
     struct dirent *tmp_rep; // repertoire que je suis en train d ouvrir
     struct passwd *useruid;
     FILE *tmp_file; //fichier que je suis en train d ouvrir
-    char path[20]; //chemin du fichier a ouvrir   (20 car /proc/ 5 carac max/ plusgrande chaine)
+    char path[270]; //chemin du fichier a ouvrir   (20 car /proc/ 5 carac max/ plusgrande chaine)
     char cmdchar;
     int i,j;
     float boot_time; // temps depuis le début du boot
