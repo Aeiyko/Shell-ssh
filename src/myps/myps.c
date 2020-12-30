@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
@@ -126,21 +127,22 @@ void boucleRead(){
     struct passwd *useruid;
     FILE *tmp_file; //fichier que je suis en train d ouvrir
     char path[270]; //chemin du fichier a ouvrir   (20 car /proc/ 5 carac max/ plusgrande chaine)
-    char cmdchar;
-    int i,j;
-    float boot_time; // temps depuis le début du boot
-    unsigned long long kb_total_mem; // valeur totale de ma ram en kb
+    memset(&path, 0, sizeof(path));
+    char cmdchar=0;
+    int i=0,j=0;
+    float boot_time=0; // temps depuis le début du boot
+    unsigned long long kb_total_mem=0; // valeur totale de ma ram en kb
     Infos *procinfos;
-    int nbprocinfos,uid;
+    int nbprocinfos=0,uid=0;
 
-    long unsigned int poubelle;
-    long unsigned int btime;
-    int nice;
-    int vmlck;
-    int sessionleader;
-    long int multithread;
-    int pgrp;
-    int tpgid;
+    long unsigned int poubelle=0;
+    long unsigned int btime=0;
+    int nice=0;
+    int vmlck=0;
+    int sessionleader=0;
+    long int multithread=0;
+    int pgrp=0;
+    int tpgid=0;
 
     openProcDir();
     for (i = 0; (tmp_rep = readdir(direc));) {
