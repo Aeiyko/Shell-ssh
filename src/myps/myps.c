@@ -239,12 +239,18 @@ void boucleRead(){
             }
             if( (fclose(tmp_file)) == EOF ) syserror(6);
             i++;
-
         }
     }
     closeProcDir();
 
     printAll(procinfos, nbprocinfos);
+
+    for (int i=0; i<nbprocinfos; i++) {
+        free(procinfos[i].command);
+        free(procinfos[i].start);
+        free(procinfos[i].user);
+    }
+    free(procinfos);
 }
 
 
