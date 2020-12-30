@@ -1,4 +1,4 @@
-#define _GNU_SOURCE
+// #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
@@ -11,7 +11,7 @@
 #include <pwd.h>
 #include <alloca.h>
 #include <time.h>
-#include "./error.h"   
+#include "./error.h"
 
 #define PATH "/proc/"
 #define STAT "/stat"
@@ -37,7 +37,7 @@ typedef struct infos{
     long int rss;
 
     char *tty;
-    
+
     char stat;
     char nice;
     char pageslocked;
@@ -92,7 +92,7 @@ unsigned calcCpu(Infos *inf,float boot_time){
     temps_total = inf->utime + inf->stime;
 
     seconds = (unsigned long long)boot_time >= (inf->start_time/HERTZ) ? (unsigned long long)boot_time - (inf->start_time/HERTZ):0;
-    if(seconds) pcpu = (temps_total * 1000ULL / HERTZ) / seconds;    
+    if(seconds) pcpu = (temps_total * 1000ULL / HERTZ) / seconds;
     return pcpu;
 }
 
@@ -134,6 +134,7 @@ void boucleRead(){
     unsigned long long kb_total_mem=0; // valeur totale de ma ram en kb
     Infos *procinfos;
     int nbprocinfos=0,uid=0;
+    char test_name[100];
 
     long unsigned int poubelle=0;
     long unsigned int btime=0;
@@ -160,13 +161,32 @@ void boucleRead(){
 
     sprintf(path, PATH""MEMINFO); // Permet de recup la valeur de ma ram
     if( !(tmp_file = fopen(path, "r")) ) syserror(5);
-    fscanf(tmp_file, "%*[^:]: %lld",&kb_total_mem);
+    for(;;){
+      fscanf(tmp_file,"%s",test_name);
+      if(!strcmp(test_name,"MemTotal:")){
+        fscanf(tmp_file, "%lld",&kb_total_mem);
+        break;
+      }
+      else{
+        fscanf(tmp_file,"%*[^\n]\n");
+      }
+    }
+
     if( (fclose(tmp_file)) == EOF ) syserror(6);
 
     sprintf(path, PATH""STAT); // Permet de recup btime
     if( !(tmp_file = fopen(path, "r")) ) syserror(5);
-    for(int j=0;j < 11;j++)fscanf(tmp_file,"%*[^\n]\n");
-    fscanf(tmp_file, "btime %lud",&btime); // Recup btime - 12
+    for(;;){
+      fscanf(tmp_file,"%s",test_name);
+      if(!strcmp(test_name,"btime")){
+        fscanf(tmp_file, "%lud",&btime); // recup btime
+        break;
+      }
+      else{
+        fscanf(tmp_file,"%*[^\n]\n");
+      }
+    }
+
     if( (fclose(tmp_file)) == EOF ) syserror(6);
 
     for (i=0;(tmp_rep = readdir(direc)) ; ) {
@@ -174,7 +194,7 @@ void boucleRead(){
 
             sprintf(path, PATH"%s"STAT,tmp_rep->d_name); // Permet de recup pid,command,stat
             if( !(tmp_file = fopen(path, "r")) ) syserror(5);
-            
+
             procinfos[i].command = malloc(sizeof(char)*2048);
             fscanf(tmp_file, "%d %s %c",&procinfos[i].pid, procinfos[i].command, &procinfos[i].stat); // recup jusqu'au 3eme
             procinfos[i].command[0] = '[';
@@ -209,32 +229,78 @@ void boucleRead(){
             calc_start(&procinfos[i], btime);
 
             if( (fclose(tmp_file)) == EOF ) syserror(6);
-            
+
+
+            //---------------------------------------------------------------------------------------------------------
+
+
             sprintf(path, PATH"%s"STATUS,tmp_rep->d_name);   // Permet de recup l'uid pour ensuite avoir user
             if( !(tmp_file = fopen(path, "r")) ) syserror(5);
-            for (int j=0; j<8; j++) fscanf(tmp_file,"%*[^\n]\n");
-            fscanf(tmp_file, "%*[^:]:\t%d",&uid); // recup de la 9 eme ligne
+            for(;;){
+              fscanf(tmp_file,"%s",test_name);
+              if(!strcmp(test_name,"Uid:")){
+                fscanf(tmp_file, "\t%d",&uid); // recup de l'uid'
+                break;
+              }
+              else{
+                fscanf(tmp_file,"%*[^\n]\n");
+              }
+            }
+
             if(uid <= -1) uid = 0;
             useruid = getpwuid(uid);
             procinfos[i].user = malloc(sizeof(char)*1024);
-            strcpy(procinfos[i].user, useruid->pw_name);
-            for (j=0; j<9; j++) fscanf(tmp_file,"%*[^\n]\n"); // va jusqu'a la ligne 18 (vsz)
-            fscanf(tmp_file, "%*[^:]:\t%lu",&procinfos[i].vsz);
-            fscanf(tmp_file,"%*[^\n]\n");
-            fscanf(tmp_file, "%*[^:]:\t%d",&vmlck); //parse de VmLck - ligne 19
+            if(useruid){
+              strcpy(procinfos[i].user, useruid->pw_name); // on finit par avoir le nom de l'utilisateur correspondant
+            }
+
+            for(;;){
+              fscanf(tmp_file,"%s",test_name);
+              if(!strcmp(test_name,"VmSize:")){
+                fscanf(tmp_file, "\t%lu",&procinfos[i].vsz); // recup du VSZ
+                break;
+              }
+              else{
+                fscanf(tmp_file,"%*[^\n]\n");
+              }
+            }
+
+            for(;;){
+              fscanf(tmp_file,"%s",test_name);
+              if(!strcmp(test_name,"VmLck:")){
+                fscanf(tmp_file, "\t%d",&vmlck); //parse de VmLck
+                break;
+              }
+              else{
+                fscanf(tmp_file,"%*[^\n]\n");
+              }
+            }
             if(vmlck != 0)procinfos[i].pageslocked='L'; //si la valeur est différente de 0 on ajoute un L a STAT du ps
-            for (j=0; j<3; j++) fscanf(tmp_file,"%*[^\n]\n"); // va jusqu'a la ligne 22 (rss)
-            fscanf(tmp_file, "%*[^:]:\t%ld",&procinfos[i].rss);
+
+            for(;;){
+              fscanf(tmp_file,"%s",test_name);
+              if(!strcmp(test_name,"VmRSS:")){
+                fscanf(tmp_file, "\t%ld",&procinfos[i].rss);
+                break;
+              }
+              else{
+                fscanf(tmp_file,"%*[^\n]\n");
+              }
+            }
             if( (fclose(tmp_file)) == EOF ) syserror(6);
+
+
+            //---------------------------------------------------------------------------------------------------------
+
 
             procinfos[i].mem = calcMem(&procinfos[i],kb_total_mem); // Calcul du %MEM
 
-            sprintf(path, PATH"%s"CMDLINE,tmp_rep->d_name);   // Permet de recup l'uid pour ensuite avoir user
+            sprintf(path, PATH"%s"CMDLINE,tmp_rep->d_name);   // Permet de recup la commande
             if( !(tmp_file = fopen(path, "r")) ) syserror(5);
             if( !( (cmdchar = fgetc(tmp_file)) == EOF)){
                 j=0;
                 do {
-                if (cmdchar == '\0') cmdchar = ' ';
+                if (cmdchar == '\0' || cmdchar == '\n') cmdchar = ' ';
                 procinfos[i].command[j++] = cmdchar;
                 }while (!( (cmdchar = fgetc(tmp_file)) == EOF));
                 procinfos[i].command[j-1] = '\0';

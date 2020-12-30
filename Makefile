@@ -28,7 +28,7 @@ clean:
 
 myps: bin/myps
 bin/myps: $(OFILE_MYPS)|bin
-	gcc $^ -o $@
+	gcc $^ -g -Wall -o $@
 
 mysh: bin/mysh
 bin/mysh: $(OFILE_COMMANDE)|bin
