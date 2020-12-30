@@ -133,7 +133,6 @@ int update_job(pid_t pid, int etat){
 }
 
 void kill_all_jobs(){
-  printf("on m'a appelé lol \n");
   job *p;
   pid_t pid;
   for (p=g_jobs.first; p;){
