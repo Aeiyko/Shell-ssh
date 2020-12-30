@@ -7,12 +7,16 @@
 #include <glob.h>
 #include <assert.h>
 #include <sys/wait.h>
+#include <signal.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "error.h"
 #include "parser.h"
 #include "jobs.h"
 #include "commands.h"
 
-
+static pid_t g_pid_foreground = NONE;
+static char* g_command = NULL;
 static char* tab_builtin[] = {
   "cd",
   "status",
@@ -25,11 +29,50 @@ static char* tab_builtin[] = {
 static builtin_fonc foncs[] = {
   makeCd,
   makeStatus,
-  NULL,//makeMyfg,
-  NULL, //makeMybg,
+  makeMyfg,
+  makeMybg,
   makeExit,
-  NULL//makeMyJobs
+  makeMyJobs
 };
+
+void handler_ctrl_c(int code){
+    if (g_pid_foreground!=NONE){
+      kill(g_pid_foreground, SIGINT);
+    }
+    else{
+      kill_all_jobs();
+      ask_for_quit();
+    }
+}
+
+void handler_ctrl_z(int code){
+  int nb;
+  if (g_pid_foreground!=NONE){
+    printf("\n"); //pour le buffer
+
+    nb = add_job(init_job(g_pid_foreground, 0, g_command));
+    printf("La commande %s devient le job %d et il est stoppé\n", g_command, nb);
+    kill(g_pid_foreground, SIGTSTP);
+    g_pid_foreground = NONE;
+    g_command = NULL;
+  }
+}
+
+void redirect_signals(){
+  signal(SIGINT, handler_ctrl_c);
+  signal(SIGTSTP, handler_ctrl_z);
+}
+
+void ask_for_quit(){
+  char c;
+  char ask[] = ASK_QUIT;
+  do{
+    printf("\n");
+    if (write(STDOUT_FILENO, ask, sizeof(ask))==ERR) fatalerror(WRITE_ERR);
+    if (read(STDIN_FILENO, &c, sizeof(char))==ERR) fatalerror(READ_ERR);
+    if (c=='y') exit(0);
+  }while (c!='y' && c!='n');
+}
 
 int toArgs(char *command, char *args[BLOCK]){
   char *tmp, **current=args;
@@ -57,6 +100,67 @@ int makeCd(cmd_infos* infos, last_status* last, int* end){
 int makeExit(cmd_infos* infos, last_status* last, int* end){
   *end = 1;
   return EXIT_NORMALLY;
+}
+
+int makeMyJobs(cmd_infos* infos, last_status* last, int* end){
+  print_all_jobs();
+  return EXIT_NORMALLY;
+}
+
+int makeMyfg(cmd_infos* infos, last_status* last, int* end){
+  job j;
+  if (infos->nb_items == 2){
+    int number = (int)strtol(infos->cmd_tab[1], NULL,10);
+    if (!get_job_number(number, &j)){
+      notiferror(JOB_ERR, ": ce job n'existe pas !");
+      return JOB_ERR;
+    }
+    kill(j.pid, SIGCONT);
+    g_pid_foreground = j.pid;
+    g_command = j.cmd;
+    del_job(j.pid);
+    return EXIT_NORMALLY;
+  }else if (infos->nb_items == 1){
+    if (!get_last_job(&j)){
+      notiferror(JOB_ERR, ": ce job n'existe pas !");
+      return JOB_ERR;
+    }
+    kill(j.pid, SIGCONT);
+    g_pid_foreground = j.pid;
+    g_command = j.cmd;
+    del_job(j.pid);
+
+    return EXIT_NORMALLY;
+  }
+
+  else return PARSE_ERR;
+}
+
+int makeMybg(cmd_infos* infos, last_status* last, int* end){
+  job j;
+  int nb;
+  if (infos->nb_items == 2){
+    int number = (int)strtol(infos->cmd_tab[1], NULL,10);
+    nb=get_job_stopped_number(number, &j);
+    if (nb==-1){
+      notiferror(JOB_ERR, ": ce job n'existe pas ou n'est pas stoppé !");
+      return JOB_ERR;
+    }else if (!nb){
+      notiferror(JOB_ERR, ": ce job est déjà en cours d'exécution !");
+      return JOB_ERR;
+    }
+    kill(j.pid, SIGCONT);
+    return EXIT_NORMALLY;
+  }else if (infos->nb_items == 1){
+    if (!get_last_job_stopped(&j)){
+      notiferror(JOB_ERR, ": pas de job stoppé en arrière-plan !");
+      return JOB_ERR;
+    }
+    kill(j.pid, SIGCONT);
+    return EXIT_NORMALLY;
+  }
+
+  else return PARSE_ERR;
 }
 
 int makeStatus(cmd_infos* infos, last_status* last, int* end){
@@ -97,7 +201,7 @@ int wildcard(char *cmd_tab[BLOCK], int *nb_items, int tab[BLOCK]){
         }
         else if (r==GLOB_NOMATCH){
           fprintf(stderr, "sh: no matches found or bad pattern for: %s\n", cmd_tab[i++]);
-          return ERR;
+          return GLOB_NOMATCH;
         }
       }else i++;
     }
@@ -125,14 +229,13 @@ void prepare_infos(cmd_infos *infos){
 }
 
 int prepare_cmd(struct parser item, cmd_infos *infos){
+  int res;
   prepare_infos(infos);
   infos->nb_items = toArgs(item.command, infos->cmd_tab);
 
-  if (wildcard(infos->cmd_tab, &infos->nb_items, infos->positions)){
-    return PARSE_ERR;
-  }
-
-
+  res = wildcard(infos->cmd_tab, &infos->nb_items, infos->positions);
+  if (res==GLOB_NOMATCH) return GLOB_NOMATCH;
+  if (res) return PARSE_ERR;
   return EXIT_NORMALLY;
 }
 
@@ -152,11 +255,11 @@ int exec_inner_cmd(cmd_infos *infos, last_status *last, int *end){
 int run_cmd(cmd_infos *infos, int *end){
   execvp(infos->cmd_tab[0], infos->cmd_tab);
   notiferror(EXEC_ERR, infos->cmd_tab[0]);
-  return ABNORMAL;
+  return EXEC_ERR;
 }
 
 
-int count_pipes(struct parser p[BLOCK],int start, int end){
+int count_pipes(struct parser p[BLOCK], int start, int end){
   int i, cpt=0;
   for (i=start; i<end; i++){
     if (p[i].type == SEP && p[i].sep != PIPE) return cpt;
@@ -172,13 +275,16 @@ int exec_pipes(struct parser p[BLOCK],int start, int end, last_status *last){
   memset(cmds, 0, BLOCK*sizeof(int));
 
   pid_t pid;
-  int parsed = 0;
+  int parsed = 0, result;
   for (i=start; i<end; i++){
+    if (p[i].type != SEP && p[i].type != CMD) break;
     if(p[i].type == SEP && p[i].sep != PIPE) break;
     if(p[i].type == CMD) cmds[nb_cmd++] = i;
   }
   pid_t pids[nb_cmd];
+
   parsed = i-start-1;
+
   if (!parsed) return parsed;
   for (i=0; i<nb_pipes; i++) if (pipe(tubes+2*i) == ERR) fatalerror(PIPE_ERR);
   for (i=0; i<nb_cmd; i++){
@@ -189,8 +295,9 @@ int exec_pipes(struct parser p[BLOCK],int start, int end, last_status *last){
         if (i<(nb_cmd-1) && dup2(tubes[(2*i)+1], STDOUT_FILENO)==ERR)
           fatalerror(DUP_ERR);
         for (a=0; a<nb_pipes*2; a++) close(tubes[a]);
-        if (prepare_cmd(p[cmds[i]], &infos)){
-          notiferror(PARSE_ERR, infos.cmd_tab[0]);
+        if ((result = prepare_cmd(p[cmds[i]], &infos))){
+          if (result != GLOB_NOMATCH)
+            notiferror(PARSE_ERR, infos.cmd_tab[0]);
         }else exit(run_cmd(&infos, &end));
     }
     pids[i]=pid;
@@ -199,12 +306,16 @@ int exec_pipes(struct parser p[BLOCK],int start, int end, last_status *last){
     close(tubes[a]);
   }
   for (i=0; i<nb_cmd; i++){
-    waitpid(pids[i], &status, 0);
+    g_pid_foreground = pids[i];
+    g_command = p[cmds[i]].command;
+    waitpid(pids[i], &status, (i==nb_cmd-1)?(0):(WUNTRACED));
   }
+  g_pid_foreground = NONE;
+  g_command = NULL;
   if (WIFEXITED(status)){
     copy_last_command(last, WEXITSTATUS(status), p[cmds[nb_cmd-1]].command);
   }
-  else{
+  else if (!WIFSTOPPED(status)){
     copy_last_command(last, ABNORMAL, p[cmds[nb_cmd-1]].command);
   }
   return parsed;
@@ -215,9 +326,47 @@ int exec_cmd(char cmd[BLOCK]){
   return exec_cmd_shell(cmd, &last, &end);
 }
 
+int make_redirections(struct parser *item, int size_parse){
+  int fd;
+  //command contient le nom de fichier dans le cas d'une redirection
+   if (item->red != INJ){
+    if (item->redtype == ADD){
+      if((fd=open(item->command, 0655 | O_APPEND | O_WRONLY))==ERR){
+        if((fd=open(item->command,0655 | O_TRUNC | O_CREAT | O_WRONLY))==ERR) fatalerror(OPEN_ERR);
+      }
+    }
+    else{
+      if((fd=open(item->command,0655 | O_TRUNC | O_CREAT | O_WRONLY))==ERR){
+        if ((fd=open(item->command,0655 | O_TRUNC | O_WRONLY))==ERR) fatalerror(OPEN_ERR);
+      }
+    }
+    switch(item->red){
+      case STD:
+        if (dup2(fd, STDOUT_FILENO) == ERR) fatalerror(DUP_ERR);
+        break;
+      case STDERR:
+        if (dup2(fd, STDERR_FILENO) == ERR) fatalerror(DUP_ERR);
+        break;
+      case BOTH:
+        if (dup2(fd, STDOUT_FILENO) == ERR) fatalerror(DUP_ERR);
+        if (dup2(fd, STDERR_FILENO) == ERR) fatalerror(DUP_ERR);
+        break;
+      default:
+        fatalerror(PARSE_ERR);
+        break;
+     }
+   }
+   else{
+     if ((fd=open(item->command,O_RDONLY))==ERR) fatalerror(OPEN_ERR);
+     if (dup2(fd, STDIN_FILENO)==ERR) fatalerror(DUP_ERR);
+   }
+
+}
+
 int exec_cmd_shell(char cmd[BLOCK], last_status *last, int* end){
   int i, piped, status=0, size_parse, fg=1; enum mode mod=NORMAL, nb_pipes; pid_t pid;
-  int nb;
+  int nb, result;
+
   cmd_infos infos;
   struct parser parse[BLOCK];
   struct parser current;
@@ -248,38 +397,47 @@ int exec_cmd_shell(char cmd[BLOCK], last_status *last, int* end){
           }
         break;
         case CMD:
-          if (mod==ANDCOND && status) continue;
-          if (mod==ORCOND && (!status)) continue;
+          if (mod==ANDCOND && last->status) continue;
+          if (mod==ORCOND && (!last->status)) continue;
+
           piped=exec_pipes(parse, i, size_parse, last);
           i+=piped;
-          if (!piped){
 
-            if (prepare_cmd(current, &infos)){
-              notiferror(PARSE_ERR, infos.cmd_tab[0]);
+          if (!piped){
+            if ((result = prepare_cmd(current, &infos))){
+              if (result != GLOB_NOMATCH) notiferror(PARSE_ERR, infos.cmd_tab[0]);
               break;
             }
             if ((nb=exec_inner_cmd(&infos, last, end)) != -1){
-
               copy_last_command(last, nb, current.command);
+              if (g_pid_foreground != NONE){
+                waitpid(g_pid_foreground, &status, WUNTRACED);
+              }
               break;
             }
+            if ((pid=fork())==ERR) fatalerror(FORK_ERR);
+            if (!pid) {
 
-             if ((pid=fork())==ERR) fatalerror(FORK_ERR);
+              if (i+1 < size_parse && parse[i+1].type == RED){
+                make_redirections(parse+i+1, size_parse);
+              }
 
-             if (!pid){
-               exit(run_cmd(&infos, end));
-             }
-
+              exit(run_cmd(&infos, end));
+            }
+            g_pid_foreground = pid;
+            g_command = current.command;
             if (i+1 < size_parse && parse[i+1].type == SEP && parse[i+1].sep == BACK){
-
               add_job(init_job(pid, 1, current.command));
             }
             else{
-            wait(&status);
+
+            waitpid(pid, &status, WUNTRACED);
+            g_pid_foreground = NONE;
+            g_command = NULL;
              if (WIFEXITED(status)){
                copy_last_command(last, WEXITSTATUS(status), current.command);
              }
-             else{
+             else if (!WIFSTOPPED(status)){
                 copy_last_command(last, ABNORMAL, current.command);
              }
            }

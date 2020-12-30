@@ -5,7 +5,9 @@ char *msg[] = {
   "cmd error ",
   "fork error ",
   "pipe error ",
-  "exec error ",
+  "exec error for %s\n",
   "parse error near '%s'\n",
-  "dup error "
+  "dup error ",
+  "job error %s\n",
+  "open error"
 };

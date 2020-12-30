@@ -14,6 +14,9 @@
 #define EXEC_ERR 6
 #define PARSE_ERR 7
 #define DUP_ERR 8
+#define JOB_ERR 9
+#define OPEN_ERR 10
+
 
 #define fatalerror(n) perror(msg[n-1]), exit(n);
 #define notiferror(n, s) fprintf(stderr, msg[n-1], s)

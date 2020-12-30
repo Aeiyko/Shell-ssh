@@ -37,6 +37,7 @@ int shell(){
 }
 
 int main(int argc, char* argv[], char* envp[]){
+  redirect_signals();
   exit(shell());
   //exec_cmd("ls");
   //init_jobs();

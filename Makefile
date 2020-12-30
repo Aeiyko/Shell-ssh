@@ -32,7 +32,7 @@ bin/myps: $(OFILE_MYPS)|bin
 
 mysh: bin/mysh
 bin/mysh: $(OFILE_COMMANDE)|bin
-	gcc $^ -o $@
+	gcc $^ -o $@ -g
 
 myls: bin/myls
 bin/myls: $(OFILE_MYLS)|bin

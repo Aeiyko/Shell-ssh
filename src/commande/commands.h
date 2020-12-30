@@ -10,9 +10,11 @@ enum mode{NORMAL, ORCOND, ANDCOND};
 
 #define BLOCK 1024
 #define PART 256
+#define ASK_QUIT "Voulez-vous vraiment quitter le programme ? (y ou n)> "
 
 #define EXIT "exit"
 #define SPACE " "
+#define NONE -1
 
 #define IS_JOKER(c) (c=='?' || c=='*' || c=='[')
 
@@ -38,5 +40,7 @@ int makeExit(cmd_infos* infos, last_status* last, int* end);
 int makeMyJobs(cmd_infos* infos, last_status* last, int* end);
 int wildcard(char *cmd_tab[BLOCK], int *nb_items, int tab[BLOCK]);
 int exec_cmd(char cmd[BLOCK]);
-int exec_cmd_shell(char cmd[BLOCK], last_status *last, int *end); 
+int exec_cmd_shell(char cmd[BLOCK], last_status *last, int *end);
 int count_pipes(struct parser p[BLOCK],int start, int end);
+void ask_for_quit();
+void redirect_signals();
