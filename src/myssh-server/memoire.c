@@ -39,6 +39,13 @@ void create_mem(){
 }
 
 void set_mem(char *valeur){
+    char *val = malloc(sizeof(char)*strlen(valeur));
+    strcpy(val, valeur);
+    val = strtok(val, "=");
+    unset_mem(val);
+    val[strlen(val)]='=';
+    free(val);
+
     memcpy(g_memoire+g_indice, valeur, strlen(valeur));
     g_indice += strlen(valeur)+1; 
 }
@@ -67,22 +74,26 @@ void unset_mem(char *valeur){
     int lenval;
     size_t quantiterestante = 0;
     int tmp;
+    int find=0;
 
     for (int i =0;i != g_indice;i+=strlen(g_memoire+i)+1) {
         val = strtok(g_memoire+i, "=");
         if (!strcmp(valeur,val)) {
             val[strlen(val)] = '=';
+            find=1;
             break;
         }
         val[strlen(val)] = '=';
     }
 
-    lenval = strlen(val);
-    memset(val, 0, lenval);
-    valsuiv = val+lenval+1;
-    for(;(tmp=strlen(valsuiv+quantiterestante));quantiterestante+=tmp+1);
-    memmove(val, valsuiv, quantiterestante);
-    g_indice -= lenval+1;
+    if(find){
+        lenval = strlen(val);
+        memset(val, 0, lenval);
+        valsuiv = val+lenval+1;
+        for(;(tmp=strlen(valsuiv+quantiterestante));quantiterestante+=tmp+1);
+        memmove(val, valsuiv, quantiterestante);
+        g_indice -= lenval+1;
+    }
 }
 
 void destroy_mem(){

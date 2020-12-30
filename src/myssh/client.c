@@ -4,6 +4,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <signal.h>
 #include "client.h"
 #include "./error.h"
 #include "../mysshd/sshstruct.h"
@@ -12,6 +13,50 @@
 #define neterr_client(clt, n) client_destroy(clt),syserror(n);
 
 static Client clt;
+
+static char *signames[] = {"ABRT","ALRM","FPE","HUP","ILL","INT","KILL","PIPE","QUIT","SEGV","TERM","USR1","USR2"};
+static int signamesvalue[] = {SIGABRT,SIGALRM,SIGFPE,SIGHUP,SIGILL,SIGINT,SIGKILL,SIGPIPE,SIGQUIT,SIGSEGV,SIGTERM,SIGUSR1,SIGUSR2};
+static int g_envoye = 0;
+
+// void _exit(int status){
+//     fprintf(stderr,"stop client\n");
+//     stop_client();
+// }
+
+void traite_signal(int code){
+    struct serversignal serversignal;
+    struct serversignal serversignalreceiv;
+    serversignal.type = SSH_MSG_CHANNEL_REQUEST;
+    strcpy(serversignal.strings, "signal");
+    for (int i=0; i<sizeof(signames)/sizeof(char *); i++) {
+        if(code == signamesvalue[i])
+            strcpy(serversignal.strings+strlen(serversignal.strings)+1, signames[i]);
+    }
+    send(clt.socket, &serversignal, sizeof(serversignal), 0);
+    printf("\nJ AI ENVOYE AU SERVEUR %d %s %s\n",serversignal.type,serversignal.strings,serversignal.strings+strlen(serversignal.strings)+1);
+    recv(clt.socket, &serversignalreceiv, sizeof(serversignalreceiv), MSG_PEEK);
+    if(serversignalreceiv.type == SSH_MSG_CHANNEL_SUCCESS && !strcmp(serversignalreceiv.strings, "signalexit")){
+        // _exit(0);
+        fprintf(stderr,"stop client\n");
+        stop_client();
+        exit(0);
+    }
+    else {
+        if (!g_envoye && (code == SIGINT || code == SIGKILL) ) {
+            // _exit(0);
+            // exit(0);
+            fprintf(stderr,"stop client\n");
+            stop_client();
+            exit(0);
+        }
+    }
+}
+
+void recup_signal(){
+    for (int i=0; i<sizeof(signames)/sizeof(char*); i++) {
+        signal(signamesvalue[i],traite_signal);
+    }
+}
 
 void newClient(char* addr,int port){
     int sfd;
@@ -108,6 +153,7 @@ void affiche_prompt(char *username,char *host,char *hostname,int boolean){
 void send_command_to_server(char *cmd,char *mode,char *username,char *host,char *hostname,int boolean){
     struct serverssh serverssh;
     struct serversshresponse serversshresponse;
+    struct serversignal serversignalreceiv;
     char response[1024];
     char commande[1024];
     ssize_t readed;
@@ -123,6 +169,7 @@ void send_command_to_server(char *cmd,char *mode,char *username,char *host,char 
     vider_buffer();
 
     for(;;){
+        g_envoye=0;
         if(!strcmp(mode,"shell")){
             affiche_prompt(username,host,hostname,boolean);
             memset(commande, 0, sizeof(commande));
@@ -130,7 +177,16 @@ void send_command_to_server(char *cmd,char *mode,char *username,char *host,char 
             strcpy(&serverssh.strings[strlen(mode)+1], commande);
         }
 
+        recv(clt.socket, &serversignalreceiv, sizeof(serversignalreceiv), MSG_PEEK);
+        if(serversignalreceiv.type == SSH_MSG_CHANNEL_SUCCESS && !strcmp(serversignalreceiv.strings, "signalexit")){
+            // _exit(0);
+            fprintf(stderr,"stop client\n");
+            stop_client();
+            exit(0);
+        }
+
         send(clt.socket, &serverssh, sizeof(struct serverssh), 0);
+        g_envoye = 1;
         if(!strcmp("shell", mode) && !strcmp(commande, "exit"))
             break;
         

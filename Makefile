@@ -48,7 +48,7 @@ bin/mysshd: $(OFILE_MYSSHD)|bin
 
 myssh_server: bin/myssh_server
 bin/myssh_server: $(OFILE_MYSSH_SERVER)|bin
-	gcc $^ -o $@
+	gcc $^ -lpthread -o $@
 
 parser: bin/parser
 bin/parser: build/commande/parser.o build/test/parser_test.o|bin

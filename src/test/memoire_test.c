@@ -29,6 +29,9 @@ int main(){
     unset_mem("Natacha");
     printf("poe\n");
     if(!get_mem("Natacha"))printf("MORT\n");
+    set_mem("billy=nouveaupouet");
+    if((pouet = get_mem("billy")))printf("nouvelle valeur de billy : %s\n",pouet);
+
     destroy_mem();
     return 0;
 }

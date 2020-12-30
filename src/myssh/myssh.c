@@ -87,6 +87,7 @@ int main(int argc,char *argv[]){
 
     newClient(myssh.host,1344);
 
+    recup_signal();
     send_to_server(myssh.username,myssh.password);
     if(wait_server_response()){
         send_command_to_server(commande,mode,myssh.username,myssh.host,myssh.hostname,bool);

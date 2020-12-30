@@ -9,3 +9,8 @@ struct serversshresponse{
     char type;
     char retour;
 };
+
+struct serversignal{
+    char type;
+    char strings[13];
+};
