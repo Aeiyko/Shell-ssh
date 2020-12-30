@@ -1,0 +1,6 @@
+Makefile
+README.md
+bin
+build
+file.txt
+src

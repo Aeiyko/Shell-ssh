@@ -10,7 +10,7 @@
 #include <pwd.h>
 #include <alloca.h>
 #include <time.h>
-#include "./error.h"   
+#include "./error.h"
 
 #define PATH "/proc/"
 #define STAT "/stat"
@@ -36,7 +36,7 @@ typedef struct infos{
     long int rss;
 
     char *tty;
-    
+
     char stat;
     char nice;
     char pageslocked;
@@ -91,7 +91,7 @@ unsigned calcCpu(Infos *inf,float boot_time){
     temps_total = inf->utime + inf->stime;
 
     seconds = (unsigned long long)boot_time >= (inf->start_time/HERTZ) ? (unsigned long long)boot_time - (inf->start_time/HERTZ):0;
-    if(seconds) pcpu = (temps_total * 1000ULL / HERTZ) / seconds;    
+    if(seconds) pcpu = (temps_total * 1000ULL / HERTZ) / seconds;
     return pcpu;
 }
 
@@ -172,7 +172,7 @@ void boucleRead(){
 
             sprintf(path, PATH"%s"STAT,tmp_rep->d_name); // Permet de recup pid,command,stat
             if( !(tmp_file = fopen(path, "r")) ) syserror(5);
-            
+
             procinfos[i].command = malloc(sizeof(char)*2048);
             fscanf(tmp_file, "%d %s %c",&procinfos[i].pid, procinfos[i].command, &procinfos[i].stat); // recup jusqu'au 3eme
             procinfos[i].command[0] = '[';
@@ -207,7 +207,7 @@ void boucleRead(){
             calc_start(&procinfos[i], btime);
 
             if( (fclose(tmp_file)) == EOF ) syserror(6);
-            
+
             sprintf(path, PATH"%s"STATUS,tmp_rep->d_name);   // Permet de recup l'uid pour ensuite avoir user
             if( !(tmp_file = fopen(path, "r")) ) syserror(5);
             for (int j=0; j<8; j++) fscanf(tmp_file,"%*[^\n]\n");

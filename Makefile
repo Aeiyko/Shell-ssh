@@ -55,7 +55,7 @@ bin/parser: build/commande/parser.o build/test/parser_test.o|bin
 	gcc $^ -o $@
 
 build/%.o: src/%.c |build
-	gcc $^ -c -Wall -o $@
+	gcc $^ -c -Wall -o $@ -g
 
 build: $(BUILD_FOLDERS)
 

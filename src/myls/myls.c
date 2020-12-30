@@ -26,8 +26,8 @@ char* my_concat(char* fileName, char* subFileName){
 }
 
 void copy_chain(char** dest, char* src){
-  *dest = (char*)malloc((strlen(src)+1)*sizeof(char));
-  strcpy(*dest, src);
+  *dest = (char*)calloc(sizeof(char), (strlen(src)+1));
+  memcpy(*dest, src, sizeof(char)*strlen(src)+1);
 }
 
 int nb_digits(int number){
@@ -215,7 +215,7 @@ void print_nlinks(nlink_t nlinks, sizeSpace spaces){
 
 void print_date(time_t s){
   double diff = difftime(time(NULL), s);
-  char *d = (char*)malloc(sizeof(char)*DATE_LEN);
+  char *d = (char*)calloc(sizeof(char), DATE_LEN);
   if (diff < SIX_MONTH){
       strftime(d, DATE_LEN,"%b %e %R", localtime(&s));
   }else {
@@ -237,11 +237,9 @@ void print_file(char* fileName, mode_t mode, int quotes, int spaces){
 }
 
 void print_lnk(fileInfo file, sizeSpace spaces){
-  int desc;
   printf(COLOR(CYAN, file.quotes, file.spaces), file.fileName);
   if (file.type_link == 0) return;
   printf(" -> ");
-
   print_file(file.link, file.mode_link, contain_symbol(file.link, '\''), contain_symbol(file.link, ' '));
 
 }
@@ -269,11 +267,10 @@ void get_folder_infos(char *folderName){
     struct dirent** infos;
     struct stat* stats;
 
-    char* path;
     if (indexData==nb_allocs*ALLOC) {
       datas=(dirContent*)realloc(datas, sizeof(dirContent)*(++nb_allocs)*ALLOC);
     }
-    
+
     if ((fd=open(folderName, O_RDONLY))==ERR){
       exit_code = OPEN_ERR;
       syserror(OPEN_ERR, folderName);
@@ -315,8 +312,8 @@ void get_folder_infos(char *folderName){
 
       free(infos[i]);
     }
-    free(stats);
-    free(infos);
+    //free(stats);
+    //free(infos);
     datas[index].spaces.len_size = maxi(datas[index].spaces.len_min+2+datas[index].spaces.len_maj, datas[index].spaces.len_size);
 
     close(fd);
@@ -324,6 +321,10 @@ void get_folder_infos(char *folderName){
 
 void print_folder_infos(int index){
   int i;
+  if (!datas[index].dirName){
+    printf("\n");
+    return;
+  }
   if (r||folders) printf("%s:\n", datas[index].dirName);
   printf("total %d\n", (int)(datas[index].spaces.nb_blocks>>1));
 
@@ -344,7 +345,7 @@ void print_folders_infos(){
   }
 }
 
-int list_one_dir(char *fileName, int a, int r, int found){
+void list_one_dir(char *fileName, int a, int r, int found){
   datas = (dirContent*)calloc(sizeof(dirContent), ALLOC);
 
   get_folder_infos(fileName);
