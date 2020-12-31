@@ -1,4 +1,4 @@
-// #define _XOPEN_SOURCE //DEFINE SI UBUNTU
+#define _XOPEN_SOURCE //DEFINE SI UBUNTU
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
@@ -66,7 +66,6 @@ void *wait_request(void *arg){
 
     indpwd=ind;
     response = check_password(&ssh.strings[induser], &ssh.strings[indpwd])?SSH_MSG_USERAUTH_SUCCESS:SSH_MSG_USERAUTH_FAILURE;
-
     send(acceptedSocket, &response, 1, 0);
 
     if(response == SSH_MSG_USERAUTH_SUCCESS){

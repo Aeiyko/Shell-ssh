@@ -141,10 +141,10 @@ void affiche_prompt(char *username,char *host,char *hostname,int boolean){
     if (write(STDOUT_FILENO, username, strlen(username))== ERR) perror("ERROR PATH"),exit(1);
     if (write(STDOUT_FILENO, "@", sizeof(char))== ERR) perror("ERROR PATH"),exit(1);
     if(boolean){
-        if (write(STDOUT_FILENO, hostname, strlen(host))== ERR) perror("ERROR PATH"),exit(1);    
+        if (write(STDOUT_FILENO, hostname, strlen(host))== ERR) perror("ERROR PATH"),exit(1);
     }
     else {
-        if (write(STDOUT_FILENO, host, strlen(host))== ERR) perror("ERROR PATH"),exit(1);    
+        if (write(STDOUT_FILENO, host, strlen(host))== ERR) perror("ERROR PATH"),exit(1);
     }
     if (write(STDOUT_FILENO, " > ", sizeof(char)*3)== ERR) perror("ERROR PATH"),exit(1);
     // free(path);
@@ -177,19 +177,18 @@ void send_command_to_server(char *cmd,char *mode,char *username,char *host,char 
             strcpy(&serverssh.strings[strlen(mode)+1], commande);
         }
 
-        recv(clt.socket, &serversignalreceiv, sizeof(serversignalreceiv), MSG_PEEK);
-        if(serversignalreceiv.type == SSH_MSG_CHANNEL_SUCCESS && !strcmp(serversignalreceiv.strings, "signalexit")){
-            // _exit(0);
-            fprintf(stderr,"stop client\n");
-            stop_client();
-            exit(0);
-        }
-
+        // recv(clt.socket, &serversignalreceiv, sizeof(serversignalreceiv), MSG_PEEK);
+        // if(serversignalreceiv.type == SSH_MSG_CHANNEL_SUCCESS && !strcmp(serversignalreceiv.strings, "signalexit")){
+        //     // _exit(0);
+        //     fprintf(stderr,"stop client\n");
+        //     stop_client();
+        //     exit(0);
+        // }
         send(clt.socket, &serverssh, sizeof(struct serverssh), 0);
         g_envoye = 1;
         if(!strcmp("shell", mode) && !strcmp(commande, "exit"))
             break;
-        
+
         do {
             memset(response, 0, 1024);
             readed = recv(clt.socket,response,1024,MSG_PEEK);

@@ -77,6 +77,7 @@ int main(int argc,char *argv[],char *envp[]){
         if(!strcmp("shell", serverssh.strings) && !strcmp("exit", serverssh.strings+strlen(serverssh.strings)+1)){
             break;
         }
+        printf("OSCOURS%s\n", serverssh.strings+strlen(serverssh.strings)+1);
         serversshresponse.retour = exec_cmd(serverssh.strings+strlen(serverssh.strings)+1);
         write(STDOUT_FILENO, "\0", 1);
         serversshresponse.type = SSH_MSG_CHANNEL_SUCCESS;

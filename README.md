@@ -49,10 +49,39 @@ FONCTIONNALITES:
         dans certains cas.
 
   — myssh :
+  IMPLEMENTES :
+    - Identification
+    - Configuration
+    - CTRL+C
+
+  BUGS CONNUS :
+
+
 
   — mysshd :
+  IMPLEMENTES :
+      -Lancer un serveur myssh-server
+      -Multi-threads
+
+  BUGS CONNUS :
+
+
 
   — myssh-server :
+  IMPLEMENTES :
+    - Généralité et format du protocole
+    - Authentification
+    - Envoie d'une commande
+    - Envoi d'un signal
+
+
+  NON IMPLEMENTES :
+
+
+
+  BUGS CONNUS :
+
+
 
   — myls : tout est implémenté sauf certains cas que nous n'avons pas vu lors de nos tests de ls -l (un membre
     d'un autre groupe nous a fait savoir que pour un certain type de fichier il fallait afficher un + après les

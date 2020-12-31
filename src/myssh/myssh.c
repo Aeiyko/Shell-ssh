@@ -62,13 +62,13 @@ int main(int argc,char *argv[]){
     }
 
     if(argc > 2 && !strcmp(argv[2],"-c")){
-        int indice = 0; 
-        // 
+        int indice = 0;
+        printf("JE SUIS LA\n" );
         int i;
         for (i=3; i<argc-1; i++) {
             strcpy(commande+indice, argv[i]);
             indice += strlen(argv[i]);
-            commande[indice++] = ' ';  
+            commande[indice++] = ' ';
         }
         strcpy(commande+indice, argv[i]);
         mode = "exec";
