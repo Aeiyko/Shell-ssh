@@ -24,6 +24,7 @@
       pour mysshd le lancer en sudo.
 
 
+
 ##FONCTIONNALITES:
   — mysh :
       IMPLEMENTES :
@@ -85,6 +86,7 @@
 
   BUGS CONNUS :
       Nous avons quelque bugs de ctrl+c pour certains cas donc nous les avons commenté.
+      Si vous avez une segfault il faut decommenter ou commenter la premiere ligne GNU SOURCE car cela depend de l'OS sur lequel vous executé le programme
 
 
   — myssh-server :
