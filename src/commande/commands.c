@@ -321,13 +321,16 @@ int exec_pipes(struct parser p[BLOCK],int start, int end, last_status *last){
   return parsed;
 }
 
-int exec_cmd(char cmd[BLOCK]){
+int exec_cmd(char *cmd){
+  char buff[BLOCK];
+  memset(buff,0,BLOCK);
+  strcpy(buff,cmd);
   last_status last; int end = 0;
   memset(last.cmd,0,PART*sizeof(char));
-  return exec_cmd_shell(cmd, &last, &end);
+  return exec_cmd_shell(buff, &last, &end);
 }
 
-int make_redirections(struct parser *item, int size_parse){
+void make_redirections(struct parser *item, int size_parse){
   int fd;
   //command contient le nom de fichier dans le cas d'une redirection
    if (item->red != INJ){
@@ -364,9 +367,12 @@ int make_redirections(struct parser *item, int size_parse){
 
 }
 
-int exec_cmd_shell(char cmd[BLOCK], last_status *last, int* end){
+int exec_cmd_shell(char *cmd, last_status *last, int* end){
   int i, piped, status=0, size_parse, fg=1; enum mode mod=NORMAL, nb_pipes; pid_t pid;
   int nb, result;
+  char buff[BLOCK];
+  memset(buff,0,BLOCK);
+  strcpy(buff,cmd);
 
   cmd_infos infos;
   struct parser parse[BLOCK];
@@ -374,7 +380,7 @@ int exec_cmd_shell(char cmd[BLOCK], last_status *last, int* end){
   memset(&current, 0, sizeof(struct parser));
   memset(parse, 0, sizeof(struct parser)*BLOCK);
 
-  size_parse = parser(cmd, parse);
+  size_parse = parser(buff, parse);
 
   for (i=0; i<size_parse; i++){
     memcpy(&current, parse+i, sizeof(struct parser));

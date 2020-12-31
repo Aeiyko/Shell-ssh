@@ -57,14 +57,13 @@ int main(int argc,char *argv[],char *envp[]){
     close(STDIN_FILENO);
     g_socket = atoi(argv[1]);
 
-    pthread_t thread;
-    pthread_create(&thread, NULL, wait_signal, &g_socket);
-
+    // pthread_t thread;
+    // pthread_create(&thread, NULL, wait_signal, &g_socket);
     struct serverssh serverssh;
     struct serversshresponse serversshresponse;
     struct serversignal serversignal;
-    close(STDOUT_FILENO);
-    if(dup(g_socket) == -1)perror("ERROR DUP"),close(g_socket),exit(1);
+    // close(STDOUT_FILENO);
+    if(dup2(g_socket,STDOUT_FILENO) == -1)perror("ERROR DUP"),close(g_socket),exit(1);
     // close(STDERR_FILENO);
     // if(dup(g_socket) == -1)perror("ERROR DUP"),close(g_socket),exit(1);
 
@@ -75,11 +74,13 @@ int main(int argc,char *argv[],char *envp[]){
 
         recv(g_socket, &serverssh , sizeof(struct serverssh), 0);
         if(!strcmp("shell", serverssh.strings) && !strcmp("exit", serverssh.strings+strlen(serverssh.strings)+1)){
+            fprintf(stderr, "Stop server exit\n");
             break;
         }
-        // serversshresponse.retour = exec_cmd(serverssh.strings+strlen(serverssh.strings)+1);
-        serversshresponse.retour = 6;
-        write(STDOUT_FILENO,"message de sauvetage\n",22);
+        serversshresponse.retour = exec_cmd(serverssh.strings+strlen(serverssh.strings)+1);
+        fprintf(stderr,"'%s'\n",serverssh.strings+strlen(serverssh.strings)+1 );
+        // serversshresponse.retour = 6;
+        // write(STDOUT_FILENO,"message de sauvetage",22);
 
         write(STDOUT_FILENO, "\0", 1);
         serversshresponse.type = SSH_MSG_CHANNEL_SUCCESS;
