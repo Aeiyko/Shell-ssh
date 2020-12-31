@@ -1,10 +1,30 @@
 # Shell-ssh
 
-POURCENTAGE DE TRAVAIL:
+##POURCENTAGE DE TRAVAIL:
   Melvin Beaussart : 50%
   Alexis Salvetti  : 50%
 
-FONCTIONNALITES:
+##COMMENT COMPILER ET UTILISER:
+  Nous avons créé un Makefile avec les commandes suivantes:
+    - make all
+    - make ssh
+    - make clean
+
+    - make mysh
+    - make myls
+    - make myps
+    - make myssh
+    - make mysshd
+    - make myssh_server
+    - make memoirepartage
+    - make parser
+
+    pour executer :
+      faire la commande "bin/NomDeLExec"
+      pour mysshd le lancer en sudo.
+
+
+##FONCTIONNALITES:
   — mysh :
       IMPLEMENTES :
         -Séquencement
@@ -15,10 +35,10 @@ FONCTIONNALITES:
 
       NON IMPLEMENTES :
         -variables (par manque de temps) mais nous pouvons vous expliquer la manière dont nous aurions procédé :
-          Les variables auraient été stockés dans une structure contenant une chaine de caractères pour le nom
-          de la variable et une chaine de caractères contenant la valeur associé à cette variable et un entier pour indiquer si la variable est globale ou non.
+          Les variables auraient été stockées dans une structure contenant une chaine de caractères pour le nom
+          de la variable et une chaine de caractères contenant la valeur associée à cette variable et un entier pour indiquer si la variable est globale ou non.
 
-          Nous aurions donc eut un tableau de ce type de structures (ou une liste chainée pour ne pas avoir une quantité limite de variables crées) en global.
+          Nous aurions donc eu un tableau de ce type de structures (ou une liste chainée pour ne pas avoir une quantité limite de variables crées) en global.
 
           Avec des fonctions permettant de supprimer une variable (appelé pour un unset), et pour ajouter ou mettre à jour les variables (appelé pour un set).
 
@@ -55,7 +75,7 @@ FONCTIONNALITES:
     - CTRL+C
 
   BUGS CONNUS :
-
+    mot de passe non sécurisé et ctrl+c qui ne marche pas dans certains cas.
 
 
   — mysshd :
@@ -64,7 +84,7 @@ FONCTIONNALITES:
       -Multi-threads
 
   BUGS CONNUS :
-
+      Nous avons quelque bugs de ctrl+c pour certains cas donc nous les avons commenté.
 
 
   — myssh-server :
@@ -80,7 +100,7 @@ FONCTIONNALITES:
 
 
   BUGS CONNUS :
-
+    La première commande ne fonctionne jamais et renvoie un code erreur venant du ssh(donc ça ne vient pas du serveur lui meme mais du exec_cmd).
 
 
   — myls : tout est implémenté sauf certains cas que nous n'avons pas vu lors de nos tests de ls -l (un membre
@@ -95,6 +115,7 @@ FONCTIONNALITES:
     n'avons pas réussi à résoudre  
 
   — myps :
+    Tout a était implémenté sauf le tty, le time et l'affichage qui n'est pas adpaté.
 
 QUELQUES REMARQUES:
 
@@ -103,9 +124,10 @@ QUELQUES REMARQUES:
   mais nous avons quelques doutes concernant notre compréhension de cette partie, dans le doute nous
   vous prions de bien vouloir nous en excuser).
 
+  - Nous n'avons pas eu le temps d'ajouter la fonctionnalité de mémoire partagé au shell mais elle a était développé et vous pouvez la tester.
+
   -Nous avons clairement souffert d'un manque de temps pour finir ce projet, nous n'avons pas relâché nos
-  efforts, nous avons passé toutes nos vacances dessus mais nous sommes forcés de constater que nous n'éprouvons
-  absoluement aucune fierté d'avoir rendu un tel projet, nous sommes conscient que nous aurions pû vous rendre
+  efforts, nous avons passé toutes nos vacances dessus mais nous sommes conscient que nous aurions pû vous rendre
   un projet bien plus aboutie si le temps et le contexte dans lequel nous avons effectué ce projet nous le
   permettait. Nous avons fait de notre mieux et nous vous prions de bien vouloir nous excuser si notre version ne
   correspond pas à vos attentes.

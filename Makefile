@@ -5,6 +5,7 @@ CFILE_MYSSH = $(wildcard src/myssh/*.c)
 CFILE_MYSSHD = $(wildcard src/mysshd/*.c)
 CFILE_MYSSH_SERVER = $(wildcard src/myssh-server/*.c) src/commande/commands.c src/commande/error.c src/commande/jobs.c src/commande/parser.c
 CFILE_TEST_PARSER = src/test/parser_test.c
+CFILE_TEST_MEMOIRE = src/test/memoire_test.c src/myssh-server/memoire.c
 
 OFILE_MYPS = $(CFILE_MYPS:src/%.c=build/%.o)
 OFILE_COMMANDE = $(CFILE_COMMANDE:src/%.c=build/%.o)
@@ -13,6 +14,8 @@ OFILE_MYSSH = $(CFILE_MYSSH:src/%.c=build/%.o)
 OFILE_MYSSHD = $(CFILE_MYSSHD:src/%.c=build/%.o)
 OFILE_MYSSH_SERVER = $(CFILE_MYSSH_SERVER:src/%.c=build/%.o)
 OFILE_TEST_PARSER = $(CFILE_TEST_PARSER:src/%.c=build/%.o)
+OFILE_TEST_MEMOIRE = $(CFILE_TEST_MEMOIRE:src/%.c=build/%.o)
+
 
 
 FOLDERS = $(wildcard src/*)
@@ -52,6 +55,10 @@ bin/myssh_server: $(OFILE_MYSSH_SERVER)|bin
 
 parser: bin/parser
 bin/parser: build/commande/parser.o build/test/parser_test.o|bin
+	gcc $^ -o $@
+
+memoirepartage: bin/memoirepartage
+bin/memoirepartage: $(OFILE_TEST_MEMOIRE)|bin
 	gcc $^ -o $@
 
 build/%.o: src/%.c |build
