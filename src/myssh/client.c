@@ -199,7 +199,6 @@ void send_command_to_server(char *cmd,char *mode,char *username,char *host,char 
         do {
             recv(clt.socket, &c, 1, MSG_PEEK);
         }while (!c && recv(clt.socket, &c, 1, 0));
-
         memset(&serversshresponse, 0, sizeof(serversshresponse));
         recv(clt.socket, &serversshresponse, sizeof(struct serversshresponse ), 0);
         printf("\nProcessus distant terminé avec le code [%d]\n",serversshresponse.retour);

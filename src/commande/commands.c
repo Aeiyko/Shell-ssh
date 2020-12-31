@@ -322,7 +322,8 @@ int exec_pipes(struct parser p[BLOCK],int start, int end, last_status *last){
 }
 
 int exec_cmd(char cmd[BLOCK]){
-  last_status last; int end;
+  last_status last; int end = 0;
+  memset(last.cmd,0,PART*sizeof(char));
   return exec_cmd_shell(cmd, &last, &end);
 }
 

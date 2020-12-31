@@ -69,20 +69,22 @@ int main(int argc,char *argv[],char *envp[]){
     // if(dup(g_socket) == -1)perror("ERROR DUP"),close(g_socket),exit(1);
 
     for(;;){
-        recv(g_socket, &serversignal, sizeof(serversignal), MSG_PEEK);
-        if(serversignal.type == SSH_MSG_CHANNEL_REQUEST && !strcmp("signal", serversignal.strings))
-            continue;
+        // recv(g_socket, &serversignal, sizeof(serversignal), MSG_PEEK);
+        // if(serversignal.type == SSH_MSG_CHANNEL_REQUEST && !strcmp("signal", serversignal.strings))
+        //     continue;
 
         recv(g_socket, &serverssh , sizeof(struct serverssh), 0);
         if(!strcmp("shell", serverssh.strings) && !strcmp("exit", serverssh.strings+strlen(serverssh.strings)+1)){
             break;
         }
-        printf("OSCOURS%s\n", serverssh.strings+strlen(serverssh.strings)+1);
-        serversshresponse.retour = exec_cmd(serverssh.strings+strlen(serverssh.strings)+1);
+        // serversshresponse.retour = exec_cmd(serverssh.strings+strlen(serverssh.strings)+1);
+        serversshresponse.retour = 6;
+        write(STDOUT_FILENO,"message de sauvetage\n",22);
+
         write(STDOUT_FILENO, "\0", 1);
         serversshresponse.type = SSH_MSG_CHANNEL_SUCCESS;
-
         send(g_socket, &serversshresponse, sizeof(serversshresponse), 0);
+
         if(!strcmp("exec", serverssh.strings))
             break;
     }
